@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Edit3, Sprout } from 'lucide-react-native';
 import { useTranslation } from '../../i18n';
 
@@ -21,8 +22,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onToggleEdit,
 }) => {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) + 14 }]}>
       <View style={styles.headerTitleRow}>
         <Text style={styles.headerTitle}>{t('myProfile')}</Text>
         <TouchableOpacity
@@ -69,7 +71,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 const styles = StyleSheet.create({
   header: {
     backgroundColor: '#074D28',
-    paddingTop: 54,
+    paddingTop: 14,
     paddingHorizontal: 20,
     paddingBottom: 24,
     borderBottomLeftRadius: 28,

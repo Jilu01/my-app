@@ -6,7 +6,6 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from '../../i18n';
@@ -74,14 +73,12 @@ export const WeatherDetailsScreen: React.FC<WeatherDetailsScreenProps> = ({ navi
 
   if (loading) {
     return (
-      <View style={styles.webWrapper}>
-        <View style={styles.mobileContainer}>
-          <StatusBar style="light" />
-          <WeatherDetailsHeader onBack={() => navigation.goBack()} />
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#1A2822" />
-            <Text style={styles.loadingText}>{t('loadingWeatherData')}</Text>
-          </View>
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <WeatherDetailsHeader onBack={() => navigation.goBack()} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1A2822" />
+          <Text style={styles.loadingText}>{t('loadingWeatherData')}</Text>
         </View>
       </View>
     );
@@ -89,16 +86,14 @@ export const WeatherDetailsScreen: React.FC<WeatherDetailsScreenProps> = ({ navi
 
   if (!weatherData) {
     return (
-      <View style={styles.webWrapper}>
-        <View style={styles.mobileContainer}>
-          <StatusBar style="light" />
-          <WeatherDetailsHeader onBack={() => navigation.goBack()} />
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{t('failedWeatherData')}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchWeatherData}>
-              <Text style={styles.retryButtonText}>{t('retry')}</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <WeatherDetailsHeader onBack={() => navigation.goBack()} />
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{t('failedWeatherData')}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchWeatherData}>
+            <Text style={styles.retryButtonText}>{t('retry')}</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -107,64 +102,46 @@ export const WeatherDetailsScreen: React.FC<WeatherDetailsScreenProps> = ({ navi
   const { current, daily } = weatherData;
 
   return (
-    <View style={styles.webWrapper}>
-      <View style={styles.mobileContainer}>
-        <StatusBar style="light" />
-        <WeatherDetailsHeader onBack={() => navigation.goBack()} />
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <LocationCard
-            location="Ahmedabad, India"
-            coordinates="23.0225°N, 72.5714°E"
-          />
-          <MainTemperatureCard
-            temperature={Math.round(current.temperature_2m)}
-            feelsLike={Math.round(current.apparent_temperature)}
-            highTemp={Math.round(daily.temperature_2m_max[0])}
-            lowTemp={Math.round(daily.temperature_2m_min[0])}
-            condition={getWeatherIcon(current.weather_code)}
-          />
-          <WeatherMetricsGrid
-            humidity={current.relative_humidity_2m}
-            windSpeed={current.wind_speed_10m}
-            pressure={Math.round(current.surface_pressure)}
-            precipitation={current.precipitation}
-          />
-          <SunCycleCard
-            sunrise={daily.sunrise[0]}
-            sunset={daily.sunset[0]}
-          />
-          <AdditionalInfoCard
-            apparentTemperature={Math.round(current.apparent_temperature)}
-            weatherCode={current.weather_code}
-            condition={getWeatherIcon(current.weather_code)}
-          />
-          <View style={styles.bottomSpacer} />
-        </ScrollView>
-      </View>
+    <View style={styles.container}>
+      <StatusBar style="light" />
+      <WeatherDetailsHeader onBack={() => navigation.goBack()} />
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <LocationCard
+          location="Ahmedabad, India"
+          coordinates="23.0225°N, 72.5714°E"
+        />
+        <MainTemperatureCard
+          temperature={Math.round(current.temperature_2m)}
+          feelsLike={Math.round(current.apparent_temperature)}
+          highTemp={Math.round(daily.temperature_2m_max[0])}
+          lowTemp={Math.round(daily.temperature_2m_min[0])}
+          condition={getWeatherIcon(current.weather_code)}
+        />
+        <WeatherMetricsGrid
+          humidity={current.relative_humidity_2m}
+          windSpeed={current.wind_speed_10m}
+          pressure={Math.round(current.surface_pressure)}
+          precipitation={current.precipitation}
+        />
+        <SunCycleCard
+          sunrise={daily.sunrise[0]}
+          sunset={daily.sunset[0]}
+        />
+        <AdditionalInfoCard
+          apparentTemperature={Math.round(current.apparent_temperature)}
+          weatherCode={current.weather_code}
+          condition={getWeatherIcon(current.weather_code)}
+        />
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  webWrapper: {
+  container: {
     flex: 1,
-    backgroundColor: '#0F1E17',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mobileContainer: {
-    width: '100%',
-    maxWidth: 412,
-    height: Platform.OS === 'web' ? '96%' : '100%',
-    maxHeight: 880,
     backgroundColor: '#F3F5F4',
-    borderRadius: Platform.OS === 'web' ? 36 : 0,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    elevation: 10,
   },
   scrollView: {
     flex: 1,

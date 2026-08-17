@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { useTranslation } from '../../i18n';
 
@@ -9,9 +10,10 @@ interface WeatherDetailsHeaderProps {
 
 export const WeatherDetailsHeader: React.FC<WeatherDetailsHeaderProps> = ({ onBack }) => {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) + 14 }]}>
       <TouchableOpacity onPress={onBack} style={styles.backButton}>
         <ArrowLeft size={24} color="#1A2822" />
       </TouchableOpacity>
@@ -27,7 +29,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 14,
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,

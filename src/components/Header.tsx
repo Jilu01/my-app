@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Mic, ChevronDown } from 'lucide-react-native';
 import { useTranslation } from '../i18n';
 
@@ -12,9 +13,10 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
   const { t, language, setLanguage } = useTranslation();
   const nextLanguage = language === 'gu' ? 'hi' : language === 'hi' ? 'en' : 'gu';
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) + 14 }]}>
       {/* Top Header Row */}
       <View style={styles.topRow}>
         <View style={styles.greetingContainer}>
@@ -61,7 +63,6 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#074D28',
-    paddingTop: 54,
     paddingHorizontal: 20,
     paddingBottom: 75, // Extra space for overlapping weather card
     borderBottomLeftRadius: 32,

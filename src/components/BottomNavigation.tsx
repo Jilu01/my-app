@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useTranslation } from '../i18n';
 
@@ -15,9 +16,10 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   onSelectTab,
 }) => {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.navWrapper}>
+    <View style={[styles.navWrapper, { paddingBottom: Math.max(insets.bottom, 6) }]}>
       <View style={styles.navBar}>
         {/* Home Tab */}
         <TouchableOpacity
@@ -146,9 +148,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       </View>
 
       {/* iOS Style Home Indicator Bar */}
-      <View style={styles.bottomBarIndicatorWrapper}>
-        <View style={styles.bottomBarIndicator} />
-      </View>
+      {Platform.OS !== 'web' && insets.bottom === 0 && (
+        <View style={styles.bottomBarIndicatorWrapper}>
+          <View style={styles.bottomBarIndicator} />
+        </View>
+      )}
     </View>
   );
 };

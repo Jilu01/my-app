@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   NavigationContainer,
   NavigationContainerRef,
@@ -24,29 +25,27 @@ const Stack = createNativeStackNavigator();
 
 const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   return (
-    <View style={styles.webWrapper}>
-      <View style={styles.mobileContainer}>
-        <StatusBar style="light" />
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          <Header />
-          <WeatherCard navigation={navigation} />
-          <CategorySection
-            onSelectCategory={(categoryId) => {
-              if (categoryId === 'soil') {
-                navigation.navigate('SoilData');
-              } else if (categoryId === 'duration') {
-                navigation.navigate('PakInfo');
-              }
-            }}
-          />
-          <BestOffersSection />
-        </ScrollView>
-      </View>
+    <View style={styles.screenContainer}>
+      <StatusBar style="light" />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        <Header />
+        <WeatherCard navigation={navigation} />
+        <CategorySection
+          onSelectCategory={(categoryId) => {
+            if (categoryId === 'soil') {
+              navigation.navigate('SoilData');
+            } else if (categoryId === 'duration') {
+              navigation.navigate('PakInfo');
+            }
+          }}
+        />
+        <BestOffersSection />
+      </ScrollView>
     </View>
   );
 };
@@ -96,63 +95,76 @@ export default function App() {
   };
 
   return (
+    <SafeAreaProvider>
     <LanguageProvider>
-      <NavigationContainer ref={navigationRef}>
-        <View style={styles.appWrapper}>
-          <View style={styles.stackContainer}>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="PakInfo" component={PakInfoScreen} />
-            <Stack.Screen name="Stats" component={StatsScreen} />
-            <Stack.Screen name="Profile">
-              {(props) => (
-                <ProfileScreen
-                  {...props}
-                  profile={userProfile}
-                  onUpdateProfile={setUserProfile}
-                />
-              )}
-            </Stack.Screen>
-            <Stack.Screen name="WeatherDetails" component={WeatherDetailsScreen} />
-            <Stack.Screen name="SoilData" component={SoilDataScreen} />
-            <Stack.Screen name="PakDetails" component={PakDetailsScreen} />
-          </Stack.Navigator>
-        </View>
+      <NavigationContainer
+        ref={navigationRef}
+        onStateChange={(state) => {
+          if (state) {
+            const currentRoute = state.routes[state.index];
+            setActiveTab(routeNameToTab(currentRoute?.name));
+          }
+        }}
+      >
+        <View style={styles.webWrapper}>
+          <View style={styles.mobileContainer}>
+            <View style={styles.stackContainer}>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="PakInfo" component={PakInfoScreen} />
+              <Stack.Screen name="Stats" component={StatsScreen} />
+              <Stack.Screen name="Profile">
+                {(props) => (
+                  <ProfileScreen
+                    {...props}
+                    profile={userProfile}
+                    onUpdateProfile={setUserProfile}
+                  />
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="WeatherDetails" component={WeatherDetailsScreen} />
+              <Stack.Screen name="SoilData" component={SoilDataScreen} />
+              <Stack.Screen name="PakDetails" component={PakDetailsScreen} />
+            </Stack.Navigator>
+          </View>
 
-        <BottomNavigation activeTab={activeTab} onSelectTab={handleTabSelect} />
-      </View>
-    </NavigationContainer>
+            <BottomNavigation activeTab={activeTab} onSelectTab={handleTabSelect} />
+          </View>
+        </View>
+      </NavigationContainer>
     </LanguageProvider>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  appWrapper: {
-    flex: 1,
-    backgroundColor: '#0F1E17',
-  },
-  stackContainer: {
-    flex: 1,
-  },
   webWrapper: {
     flex: 1,
     backgroundColor: '#0F1E17',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: Platform.OS === 'web' ? 'center' : 'stretch',
+    justifyContent: Platform.OS === 'web' ? 'center' : 'flex-start',
   },
   mobileContainer: {
+    flex: Platform.OS === 'web' ? undefined : 1,
     width: '100%',
-    maxWidth: 412,
+    maxWidth: Platform.OS === 'web' ? 412 : undefined,
     height: Platform.OS === 'web' ? '96%' : '100%',
-    maxHeight: 880,
+    maxHeight: Platform.OS === 'web' ? 880 : undefined,
     backgroundColor: '#F3F5F4',
     borderRadius: Platform.OS === 'web' ? 36 : 0,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.35,
+    shadowOpacity: Platform.OS === 'web' ? 0.35 : 0,
     shadowRadius: 24,
-    elevation: 10,
+    elevation: Platform.OS === 'web' ? 10 : 0,
+  },
+  stackContainer: {
+    flex: 1,
+  },
+  screenContainer: {
+    flex: 1,
+    backgroundColor: '#F3F5F4',
   },
   scrollView: {
     flex: 1,
