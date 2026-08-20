@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from '../../i18n';
 
 interface AdditionalInfoCardProps {
   apparentTemperature: number;
@@ -12,12 +13,13 @@ export const AdditionalInfoCard: React.FC<AdditionalInfoCardProps> = ({
   weatherCode,
   condition,
 }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.infoCard}>
-      <Text style={styles.sectionTitle}>Additional Information</Text>
-      <InfoRow label="Apparent Temperature" value={`${apparentTemperature}°C`} />
-      <InfoRow label="Weather Code" value={weatherCode.toString()} />
-      <InfoRow label="Condition" value={condition} />
+      <Text style={styles.sectionTitle}>{t('additionalInfo')}</Text>
+      <InfoRow label={t('apparentTemperature')} value={`${apparentTemperature}°C`} />
+      <InfoRow label={t('weatherCode')} value={weatherCode.toString()} />
+      <InfoRow label={t('condition')} value={condition} />
     </View>
   );
 };

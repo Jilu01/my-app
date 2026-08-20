@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from '../../i18n';
+import { useAppContext } from '../../context/AppContext';
 import { WeatherDetailsHeader } from './WeatherDetailsHeader';
 import { LocationCard } from './LocationCard';
 import { MainTemperatureCard } from './MainTemperatureCard';
@@ -40,16 +41,21 @@ interface WeatherDetailsScreenProps {
 
 export const WeatherDetailsScreen: React.FC<WeatherDetailsScreenProps> = ({ navigation }) => {
   const { t } = useTranslation();
+  const { appState } = useAppContext();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const lat = appState.latitude || 23.0225;
+  const lon = appState.longitude || 72.5714;
+  const displayLocation = appState.location || 'Ahmedabad';
+
   useEffect(() => {
     fetchWeatherData();
-  }, []);
+  }, [lat, lon]);
 
   const fetchWeatherData = async () => {
     try {
-      const url = 'https://api.open-meteo.com/v1/forecast?latitude=23.0225&longitude=72.5714&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,surface_pressure,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto';
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,surface_pressure,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;
       const response = await fetch(url);
       const data = await response.json();
       setWeatherData(data);
@@ -107,8 +113,8 @@ export const WeatherDetailsScreen: React.FC<WeatherDetailsScreenProps> = ({ navi
       <WeatherDetailsHeader onBack={() => navigation.goBack()} />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <LocationCard
-          location="Ahmedabad, India"
-          coordinates="23.0225°N, 72.5714°E"
+          location={`${displayLocation}, India`}
+          coordinates={`${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E`}
         />
         <MainTemperatureCard
           temperature={Math.round(current.temperature_2m)}

@@ -1,19 +1,51 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Mic, ChevronDown } from 'lucide-react-native';
+import { Search, Mic, ChevronDown, MapPin } from 'lucide-react-native';
 import { useTranslation } from '../i18n';
+import { useAppContext } from '../context/AppContext';
 
 const userAvatar = require('../../assets/images/user_avatar.jpg');
 
 interface HeaderProps {
   onSearchChange?: (text: string) => void;
+  navigation?: any;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
+// Format date based on language
+const formatDate = (language: string): string => {
+  const now = new Date();
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  };
+
+  if (language === 'gu') {
+    return now.toLocaleDateString('gu-IN', options);
+  } else if (language === 'hi') {
+    return now.toLocaleDateString('hi-IN', options);
+  }
+  return now.toLocaleDateString('en-IN', options);
+};
+
+// Get time-based greeting
+const getGreetingKey = (): string => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'goodMorning';
+  if (hour < 17) return 'goodMorning';
+  return 'goodMorning';
+};
+
+export const Header: React.FC<HeaderProps> = ({ onSearchChange, navigation }) => {
   const { t, language, setLanguage } = useTranslation();
+  const { appState } = useAppContext();
   const nextLanguage = language === 'gu' ? 'hi' : language === 'hi' ? 'en' : 'gu';
   const insets = useSafeAreaInsets();
+
+  const displayLocation = appState.location || 'Ahmedabad';
+  const liveDate = formatDate(language);
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) + 14 }]}>
@@ -21,11 +53,26 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
       <View style={styles.topRow}>
         <View style={styles.greetingContainer}>
           <Text style={styles.greetingText}>
-            {t('greetingHello')}<Text style={styles.boldGreeting}>{t('goodMorning')}</Text>
+            {t('greetingHello')}<Text style={styles.boldGreeting}>{t(getGreetingKey())}</Text>
           </Text>
-          <TouchableOpacity style={styles.dateSelector} activeOpacity={0.7}>
-            <Text style={styles.dateText}>{t('dateLabel')}</Text>
+          <TouchableOpacity
+            style={styles.dateSelector}
+            activeOpacity={0.7}
+            onPress={() => navigation?.navigate('Setup')}
+          >
+            <Text style={styles.dateText}>{liveDate}</Text>
             <ChevronDown size={14} color="#A7D5BE" style={styles.chevron} />
+          </TouchableOpacity>
+
+          {/* Clickable Location Badge */}
+          <TouchableOpacity
+            style={styles.locationBadge}
+            activeOpacity={0.75}
+            onPress={() => navigation?.navigate('Setup')}
+          >
+            <MapPin size={13} color="#A7D5BE" />
+            <Text style={styles.locationBadgeText}>{displayLocation}</Text>
+            <Text style={styles.changeText}>({t('changeLocation')})</Text>
           </TouchableOpacity>
         </View>
 
@@ -37,7 +84,11 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
           >
             <Text style={styles.languageButtonText}>{language.toUpperCase()}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.avatarWrapper} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.avatarWrapper}
+            activeOpacity={0.8}
+            onPress={() => navigation?.navigate('Profile')}
+          >
             <Image source={userAvatar} style={styles.avatarImage} />
           </TouchableOpacity>
         </View>
@@ -64,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#074D28',
     paddingHorizontal: 20,
-    paddingBottom: 75, // Extra space for overlapping weather card
+    paddingBottom: 75,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
   },
@@ -101,6 +152,27 @@ const styles = StyleSheet.create({
   },
   chevron: {
     marginLeft: 4,
+  },
+  locationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  locationBadgeText: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  changeText: {
+    fontSize: 11,
+    color: '#A7D5BE',
+    fontWeight: '400',
   },
   rightActions: {
     flexDirection: 'row',

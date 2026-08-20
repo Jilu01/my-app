@@ -2,10 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from '../i18n';
+import { useAppContext } from '../context/AppContext';
 
 export const StatsScreen: React.FC = () => {
   const { t } = useTranslation();
+  const { appState } = useAppContext();
   const insets = useSafeAreaInsets();
+  const displayLocation = appState.location || 'Ahmedabad';
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={[styles.content, { paddingTop: Math.max(insets.top, 20) + 14 }]} showsVerticalScrollIndicator={false}>
@@ -13,22 +17,22 @@ export const StatsScreen: React.FC = () => {
 
         <View style={styles.metricCard}>
           <Text style={styles.metricLabel}>{t('totalPakCount')}</Text>
-          <Text style={styles.metricValue}>2</Text>
+          <Text style={styles.metricValue}>12</Text>
         </View>
 
         <View style={styles.metricCard}>
-          <Text style={styles.metricLabel}>{t('ahmedabadWeather')}</Text>
-          <Text style={styles.metricValue}>Sunny, 32°C</Text>
+          <Text style={styles.metricLabel}>{displayLocation} {t('locationWeatherLabel')}</Text>
+          <Text style={styles.metricValue}>{t('sunnyWeatherVal')}</Text>
         </View>
 
         <View style={styles.metricCard}>
           <Text style={styles.metricLabel}>{t('soilTrend')}</Text>
-          <Text style={styles.metricValue}>Stable pH, Moderate Moisture</Text>
+          <Text style={styles.metricValue}>{t('stableSoilTrendVal')}</Text>
         </View>
 
         <View style={styles.metricCard}>
           <Text style={styles.metricLabel}>{t('recommendedCrops')}</Text>
-          <Text style={styles.metricValue}>Groundnut, Millet, Cotton</Text>
+          <Text style={styles.metricValue}>{t('recCropsVal')}</Text>
         </View>
       </ScrollView>
     </View>
