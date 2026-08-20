@@ -1,11 +1,82 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MapPin } from 'lucide-react-native';
 import Svg, { Path, Circle, G } from 'react-native-svg';
 import { useTranslation } from '../i18n';
+import { useAppContext } from '../context/AppContext';
+
+interface WeatherInfo {
+  temperature: number;
+  humidity: number;
+  precipitation: number;
+  pressure: number;
+  windSpeed: number;
+  tempHigh: number;
+  tempLow: number;
+  sunrise: string;
+  sunset: string;
+}
 
 export const WeatherCard: React.FC<{ navigation?: any }> = ({ navigation }) => {
   const { t } = useTranslation();
+  const { appState } = useAppContext();
+  const [weather, setWeather] = useState<WeatherInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const displayLocation = appState.location || 'Ahmedabad';
+  const lat = appState.latitude || 23.0225;
+  const lon = appState.longitude || 72.5714;
+
+  useEffect(() => {
+    fetchWeather();
+  }, [appState.latitude, appState.longitude]);
+
+  const fetchWeather = async () => {
+    setLoading(true);
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,surface_pressure,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      const sunriseTime = data.daily?.sunrise?.[0]
+        ? new Date(data.daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '6:00 AM';
+      const sunsetTime = data.daily?.sunset?.[0]
+        ? new Date(data.daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '6:30 PM';
+
+      setWeather({
+        temperature: Math.round(data.current.temperature_2m),
+        humidity: data.current.relative_humidity_2m,
+        precipitation: data.current.precipitation,
+        pressure: Math.round(data.current.surface_pressure),
+        windSpeed: data.current.wind_speed_10m,
+        tempHigh: Math.round(data.daily.temperature_2m_max[0]),
+        tempLow: Math.round(data.daily.temperature_2m_min[0]),
+        sunrise: sunriseTime,
+        sunset: sunsetTime,
+      });
+    } catch (e) {
+      // Fallback to static data
+      setWeather({
+        temperature: 17,
+        humidity: 40,
+        precipitation: 5.1,
+        pressure: 450,
+        windSpeed: 23,
+        tempHigh: 23,
+        tempLow: 14,
+        sunrise: '5:25 AM',
+        sunset: '8:04 PM',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const temp = weather?.temperature ?? 17;
+  const isPositive = temp >= 0;
+
   return (
     <TouchableOpacity 
       style={styles.cardContainer}
@@ -16,7 +87,7 @@ export const WeatherCard: React.FC<{ navigation?: any }> = ({ navigation }) => {
       <View style={styles.topRow}>
         <View style={styles.locationContainer}>
           <MapPin size={18} color="#1A2822" style={styles.pinIcon} />
-          <Text style={styles.locationText}>Ahmedabad</Text>
+          <Text style={styles.locationText}>{displayLocation}</Text>
         </View>
 
         {/* Night Weather SVG Graphic */}
@@ -47,18 +118,24 @@ export const WeatherCard: React.FC<{ navigation?: any }> = ({ navigation }) => {
       </View>
 
       {/* Main Temperature display */}
-      <View style={styles.tempRow}>
-        <View style={styles.mainTempWrapper}>
-          <Text style={styles.tempPlus}>+</Text>
-          <Text style={styles.tempValue}>17</Text>
-          <Text style={styles.tempUnit}>°C</Text>
+      {loading ? (
+        <View style={styles.loadingRow}>
+          <ActivityIndicator size="small" color="#074D28" />
         </View>
+      ) : (
+        <View style={styles.tempRow}>
+          <View style={styles.mainTempWrapper}>
+            <Text style={styles.tempPlus}>{isPositive ? '+' : '-'}</Text>
+            <Text style={styles.tempValue}>{Math.abs(temp)}</Text>
+            <Text style={styles.tempUnit}>°C</Text>
+          </View>
 
-        <View style={styles.hiLoContainer}>
-          <Text style={styles.hiLoText}>H: 23°C</Text>
-          <Text style={styles.hiLoText}>L: 14°C</Text>
+          <View style={styles.hiLoContainer}>
+            <Text style={styles.hiLoText}>H: {weather?.tempHigh ?? 23}°C</Text>
+            <Text style={styles.hiLoText}>L: {weather?.tempLow ?? 14}°C</Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Dotted Line Separator */}
       <View style={styles.dottedLineContainer}>
@@ -75,31 +152,31 @@ export const WeatherCard: React.FC<{ navigation?: any }> = ({ navigation }) => {
       {/* Weather Metrics Grid */}
       <View style={styles.metricsGrid}>
         <View style={styles.metricItem}>
-          <Text style={styles.metricLabel} numberOfLines={1}>Humidity</Text>
-          <Text style={styles.metricValue}>40%</Text>
+          <Text style={styles.metricLabel} numberOfLines={1}>{t('humidity')}</Text>
+          <Text style={styles.metricValue}>{weather?.humidity ?? 40}%</Text>
         </View>
 
         <View style={styles.metricItem}>
-          <Text style={styles.metricLabel} numberOfLines={1}>Precipitation</Text>
-          <Text style={styles.metricValue}>5.1ml</Text>
+          <Text style={styles.metricLabel} numberOfLines={1}>{t('precipitation')}</Text>
+          <Text style={styles.metricValue}>{weather?.precipitation ?? 5.1}ml</Text>
         </View>
 
         <View style={styles.metricItem}>
-          <Text style={styles.metricLabel} numberOfLines={1}>Pressure</Text>
-          <Text style={styles.metricValue}>450 hpa</Text>
+          <Text style={styles.metricLabel} numberOfLines={1}>{t('pressure')}</Text>
+          <Text style={styles.metricValue}>{weather?.pressure ?? 450} hpa</Text>
         </View>
 
         <View style={styles.metricItem}>
-          <Text style={styles.metricLabel} numberOfLines={1}>Wind</Text>
-          <Text style={styles.metricValue}>23m/s</Text>
+          <Text style={styles.metricLabel} numberOfLines={1}>{t('windSpeed')}</Text>
+          <Text style={styles.metricValue}>{weather?.windSpeed ?? 23}m/s</Text>
         </View>
       </View>
 
       {/* Sunrise & Sunset Arc Timeline */}
       <View style={styles.sunTimelineRow}>
         <View style={styles.sunTimeCol}>
-          <Text style={styles.sunTimeText}>5:25 am</Text>
-          <Text style={styles.sunTimeLabel}>Sunrise</Text>
+          <Text style={styles.sunTimeText}>{weather?.sunrise ?? '5:25 AM'}</Text>
+          <Text style={styles.sunTimeLabel}>{t('sunrise')}</Text>
         </View>
 
         {/* Curved Dotted Arc with Sun */}
@@ -127,8 +204,8 @@ export const WeatherCard: React.FC<{ navigation?: any }> = ({ navigation }) => {
         </View>
 
         <View style={[styles.sunTimeCol, { alignItems: 'flex-end' }]}>
-          <Text style={styles.sunTimeText}>8:04 am</Text>
-          <Text style={styles.sunTimeLabel}>Sunset</Text>
+          <Text style={styles.sunTimeText}>{weather?.sunset ?? '8:04 PM'}</Text>
+          <Text style={styles.sunTimeLabel}>{t('sunset')}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -169,6 +246,11 @@ const styles = StyleSheet.create({
   weatherIconWrapper: {
     width: 65,
     height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingRow: {
+    height: 52,
     justifyContent: 'center',
     alignItems: 'center',
   },
